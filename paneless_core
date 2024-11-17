@@ -57,7 +57,7 @@ for source_index in $SOURCE_INDEXES ; do
 	(( no_color )) && color= || { color=${colors[current_color]} ; (( current_color++, current_color >= ${#colors[@]} )) && current_color=0 ; }
 	(( text_length = pane_columns[source_index] - 1 ))
 	
-	<$fs/vpadded_$source_index perl -e "$ansi_substr" 500 $start_character $text_length "$color" >$fs/cut_$source_index &
+	<$fs/vpadded_$source_index perl -CS -e "$ansi_substr" 500 $start_character $text_length "$color" >$fs/cut_$source_index &
 done
 
 wait
@@ -173,8 +173,17 @@ use strict ; use warnings ; use Encode ;
 while(<STDIN>)
 	{
 	chomp ;
-	print( ($ARGV[3] // '') . nk_mbsubstr($_ . (" " x $ARGV[0]), $ARGV[1], $ARGV[2] // 0) . "\n") ;
+	print( ($ARGV[3] // '') . ansi_substr($_, $ARGV[1], $ARGV[2]) . "\n") ;
 	}
+
+use v5.14;
+use Text::ANSI::Fold;
+sub ansi_substr {
+    my($text, $offset, $length) = @_;
+    state $fold = Text::ANSI::Fold->new(padding => 1, expand => 1);
+    my @s = $fold->text($text)->chops(width => [ $offset, $length || -1 ]);
+    return $s[1] // ' ' x $length;
+}
 
 sub nk_mbsubstr
 {
