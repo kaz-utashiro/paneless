@@ -57,7 +57,7 @@ for source_index in $SOURCE_INDEXES ; do
 	(( no_color )) && color= || { color=${colors[current_color]} ; (( current_color++, current_color >= ${#colors[@]} )) && current_color=0 ; }
 	(( text_length = pane_columns[source_index] - 1 ))
 	
-	<$fs/vpadded_$source_index perl -e "$ansi_substr" 500 $start_character $text_length "$color" >$fs/cut_$source_index &
+	<$fs/vpadded_$source_index perl -CS -e "$ansi_substr" 500 $start_character $text_length "$color" $tab_size >$fs/cut_$source_index &
 done
 
 wait
@@ -169,11 +169,15 @@ EOC
 
 read -r -d '' ansi_substr <<'EOC'
 use strict ; use warnings ; use Encode ;
+use Text::ANSI::Fold::Util 1.02 qw(ansi_substr);
+Text::ANSI::Fold->configure(padding => 1, expand => 1, tabstop => $ARGV[4] || 8);
 
 while(<STDIN>)
 	{
 	chomp ;
-	print( ($ARGV[3] // '') . nk_mbsubstr($_ . (" " x $ARGV[0]), $ARGV[1], $ARGV[2] // 0) . "\n") ;
+	print( ($ARGV[3] // '') .
+	       (ansi_substr($_, $ARGV[1], $ARGV[2]) // ' ' x $ARGV[2]) .
+	       "\n" ) ;
 	}
 
 sub nk_mbsubstr
