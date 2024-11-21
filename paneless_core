@@ -177,10 +177,12 @@ while(<STDIN>)
 	}
 
 use v5.14;
+use utf8;
 use Text::ANSI::Fold;
 sub ansi_substr {
     my($text, $offset, $length) = @_;
-    state $fold = Text::ANSI::Fold->new(padding => 1, expand => 1);
+    state $fold = Text::ANSI::Fold->new(padding => 1, expand => 1,
+					crackwide => 1, lefthalf => "\N{LIGHT SHADE}", righthalf => "\N{LIGHT SHADE}");
     my @s = $fold->text($text)->chops(width => [ $offset, $length || -1 ]);
     return $s[1] // ' ' x $length;
 }
