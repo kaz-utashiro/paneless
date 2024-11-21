@@ -169,8 +169,11 @@ EOC
 
 read -r -d '' ansi_substr <<'EOC'
 use strict ; use warnings ; use Encode ;
-use Text::ANSI::Fold::Util 1.02 qw(ansi_substr);
-Text::ANSI::Fold->configure(padding => 1, expand => 1, tabstop => $ARGV[4] || 8);
+
+use utf8;
+use Text::ANSI::Fold::Util 1.03 qw(ansi_substr);
+Text::ANSI::Fold->configure(padding => 1, expand => 1, tabstop => $ARGV[4] || 8,
+			    crackwide => 1, lefthalf => "\N{LIGHT SHADE}", righthalf => "\N{LIGHT SHADE}");
 
 while(<STDIN>)
 	{
